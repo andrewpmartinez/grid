@@ -1,0 +1,144 @@
+# builds on PR and PUSH for branches that aren't releases. This does include PRs to main but not PUSHING to main (which
+# triggers a release and is handled in release-builds.yml).
+#
+# Versions will have the last version tag used appended with a "-<commit hash>" and will have a non `main` branch
+#
+name: dev-builds
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+
+jobs:
+  mac-os-build:
+    name: Build Mac OS binaries
+    runs-on: macos-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Save Latest Git Version As Env
+        run: |
+          GIT_LAST_VERSION=$(git describe --tags --abbrev=0)
+          echo "Last git tag: $GIT_LAST_VERSION"
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '~1.17.1'
+
+      - name: Build
+        run: |
+          BUILD_DATE=$(date -u "+%F %T+00:00")
+          GIT_COMMIT=$(git rev-parse --short HEAD)
+          GIT_BRANCH=$(git branch --show-current)
+          REPO_PREFIX="github.com/andrewpmartinez/grid"
+          go build -ldflags "-X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
+          tar -cvf grid.tar ./grid
+
+      - name: List
+        run: |
+          pwd
+          ls -la
+
+      - name: Test
+        run: |
+          go test ./...
+
+      - name: Save Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: grid.mac.x64
+          path: ./grid.tar
+
+
+
+  windows-build:
+    name: Build Windows binaries
+    runs-on: windows-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Save Latest Git Version As Env
+        run: |
+          $GIT_LAST_VERSION=git describe --tags --abbrev=0
+          echo "Last git tag: $GIT_LAST_VERSION"
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '~1.17.1'
+
+      - name: Build
+        run: |
+          $BUILD_DATE=get-date -AsUTC -Format "yyyy-MM-dd HH:mm:ss+00:00"
+          $GIT_COMMIT=git rev-parse --short HEAD
+          $GIT_BRANCH=git branch --show-current
+          $REPO_PREFIX="github.com/andrewpmartinez/grid"
+          go build -ldflags "-X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
+      - name: List
+        run: |
+          ls
+
+      - name: Test
+        run: |
+          go test ./...
+
+      - name: Save Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: grid.windows.x64
+          path: ./grid.exe
+
+  linux-build:
+    name: Build Linux Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Save Latest Git Version As Env
+        run: |
+          GIT_LAST_VERSION=$(git describe --tags --abbrev=0)
+          echo "Last git tag: $GIT_LAST_VERSION"
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '~1.17.1'
+
+      - name: Install apt deps
+        run: |
+          sudo apt-get update
+          sudo apt install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev libxxf86vm-dev
+
+      - name: Build
+        run: |
+          BUILD_DATE=$(date -u "+%F %T+00:00")
+          GIT_COMMIT=$(git rev-parse --short HEAD)
+          GIT_BRANCH=$(git branch --show-current)
+          REPO_PREFIX="github.com/andrewpmartinez/grid"
+          go build -ldflags "-X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
+          tar -cvf grid.tar ./grid
+      - name: List
+        run: |
+          pwd
+          ls -la
+
+      - name: Test
+        run: |
+          go test ./...
+
+      - name: Save Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: grid.linux.x64
+          path: ./grid.tar
