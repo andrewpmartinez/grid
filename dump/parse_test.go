@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 var routine1 = `intentional garbage
 intentional garbage
 goroutine 733794 [semacquire, 792 minutes]:
@@ -82,7 +81,7 @@ func Test_ParseEntireGoRoutine(t *testing.T) {
 		//goroutine 733794 [semacquire, 792 minutes
 		t.Run("go routine 0 id to be 733794", func(t *testing.T) {
 			req := require.New(t)
-			req.Equal("733794", dump.Routines[0].Id)
+			req.Equal(733794, dump.Routines[0].Id)
 		})
 
 		t.Run("go routine 0 type to be semacquire", func(t *testing.T) {

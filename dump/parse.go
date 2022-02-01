@@ -2,27 +2,43 @@ package dump
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
+	"github.com/elliotchance/orderedmap"
 	"github.com/sirupsen/logrus"
 	"os"
+	"strings"
 )
 
 type Dump struct {
 	Routines []*Routine
-	Stats    Stats
-}
-
-type Stats struct {
-	RoutinesByType     map[string]*Routine
-	RoutinesByLocation map[string][]*Routine
+	Stats    *Stats
 }
 
 type Routine struct {
 	*RoutineLine
 	Frames []*Frame
 
-	FileStartLine int
-	FileEndLine   int
+	FileStartLine  int
+	FileEndLine    int
+	LineText       string
+	AllLines       []string
+	allBuilder     strings.Builder
+	StackSignature string
+}
+
+func (r *Routine) Raw() string {
+	return r.allBuilder.String()
+}
+
+func (r *Routine) calculateStackSignature() {
+	stringBuilder := strings.Builder{}
+
+	for _, frame := range r.Frames {
+		stringBuilder.Write([]byte(frame.UniqueId))
+	}
+
+	r.StackSignature = fmt.Sprintf("%x", sha256.Sum256([]byte(stringBuilder.String())))
 }
 
 type Frame struct {
@@ -33,9 +49,12 @@ type Frame struct {
 	Path                  string
 	Offset                string
 	Line                  int
+	FunctionLineText      string
+	LocationLineText      string
 
 	FileStartLine int
 	FileEndLine   int
+	UniqueId      string
 }
 
 func ParseFile(filePath string, logger Logger) (*Dump, error) {
@@ -51,7 +70,13 @@ func ParseFile(filePath string, logger Logger) (*Dump, error) {
 
 func ParseScanner(scanner *bufio.Scanner, logger Logger) (*Dump, error) {
 	ctx := context{
-		dump:           &Dump{},
+		dump: &Dump{
+			Routines: nil,
+			Stats: &Stats{
+				RoutinesByType:     orderedmap.NewOrderedMap(),
+				RoutinesByFunction: orderedmap.NewOrderedMap(),
+			},
+		},
 		currentRoutine: nil,
 		logger:         logger,
 	}
