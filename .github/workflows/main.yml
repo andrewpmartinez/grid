@@ -70,4 +70,5 @@ jobs:
         run: |
           sudo apt-get update
           go install github.com/mitchellh/gox@latest
+          apt install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev
           $(go env GOPATH)/bin/gox -cgo -os=linux -arch=amd64 -output=${GOX_OUTPUT} ./...
