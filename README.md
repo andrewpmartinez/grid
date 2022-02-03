@@ -1,16 +1,21 @@
-# grid
-GRID - Go Routine Inspect Dump parses Go routine dumps. It provides both a go module to parse dump files (`dump/`) and 
-an executable GUI to show the results of the parse (`cmd/grid`).
+# grid - Go Routine Inspect Dumps
 
-The parser will provide broken down information from the go routine frames (such as line numbers, file names, etc.) as
-well as provide de-duped go routines based on stack trace signatures.
+
+GRID provides both a go module to parse dump files (`grid/dump`) and an executable GUI (`grid`) to show the results of the parse (`cmd/grid`). 
+The goals is to aid with human interpretation of golang go routine dumps. In large programs with many go routines (due to workers, threads, etc.)
+it can be difficult to see which go routiens are the same (stack wise) and which ones are unique.
+
+GRID's parser provides both the raw parse and "de-duped" go routines. Go routines have a signature that is calculated by the go routine's stack
+trace at the source file line level. The entire go routiens signature is then matched against all other go routines in the dump to group them
+together.
 
 ![GRID Screenshot](images/screenshot.png)
 
 ## The Parser: Dump
 
-The dump module can take in a clean go routine dump file and produces a `Dump` struct. It can be invoked by the 
-`dump.ParseFile()` function which has the following signature:
+The dump module can take in a go routine dump file and produces a `Dump` struct. It can be included in your golang project with your 
+own UI or CLI output. It is developed completely separate from the UI `grid`. It can be invoked by the `dump.ParseFile()` function which has the 
+following signature:
 
 ```
 ParseFile(filePath string, logger Logger) (*Dump, error)
@@ -41,12 +46,19 @@ inside the `Stats` struct if needed.
 
 ## The GUI: GRID
 
-The GRID GUI can be invoked by building this project and running:
+The GRID UI is an immediate mode UI. It can be invoked by downloading a release or building this project and running:
 
 ```
 > grid gui <path.to.dump>
 ```
 
+
+## Upcomming Features
+
+1) Dump searching
+2) Opening 0..n dump files
+3) Dump export
+4) UX improvements
 
 ## Building This Project
 
@@ -61,3 +73,5 @@ Once complete, building GRID can be accomplished as follows:
 ```
 go install ./...
 ```
+
+If you wish to make the binary portale, ensure you include ldflags/extldflags to create a statically linked binary. For hints, see this projects release workflow.
