@@ -41,7 +41,11 @@ inside the `Stats` struct if needed.
 
 ## The GUI: GRID
 
-The GRID GUI can be invoked by building this project and running `grid <path.to.dump>`.
+The GRID GUI can be invoked by building this project and running:
+
+```
+> grid gui <path.to.dump>
+```
 
 
 ## Building This Project
