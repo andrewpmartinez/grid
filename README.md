@@ -3,10 +3,10 @@
 
 GRID provides both a go module to parse dump files (`grid/dump`) and an executable GUI (`grid`) to show the results of the parse (`cmd/grid`). 
 The goals is to aid with human interpretation of golang go routine dumps. In large programs with many go routines (due to workers, threads, etc.)
-it can be difficult to see which go routiens are the same (stack wise) and which ones are unique.
+it can be difficult to see which go routines are the same (stack wise) and which ones are unique.
 
 GRID's parser provides both the raw parse and "de-duped" go routines. Go routines have a signature that is calculated by the go routine's stack
-trace at the source file line level. The entire go routiens signature is then matched against all other go routines in the dump to group them
+trace at the source file and line level. The go routines signature is then matched against all other go routines in the dump to group them
 together.
 
 ![GRID Screenshot](images/screenshot.png)
@@ -14,7 +14,7 @@ together.
 ## The Parser: Dump
 
 The dump module can take in a go routine dump file and produces a `Dump` struct. It can be included in your golang project with your 
-own UI or CLI output. It is developed completely separate from the UI `grid`. It can be invoked by the `dump.ParseFile()` function which has the 
+own UI or CLI output. It is developed separate from the UI `grid`. It can be invoked by the `dump.ParseFile()` function which has the 
 following signature:
 
 ```
@@ -74,4 +74,4 @@ Once complete, building GRID can be accomplished as follows:
 go install ./...
 ```
 
-If you wish to make the binary portale, ensure you include ldflags/extldflags to create a statically linked binary. For hints, see this projects release workflow.
+If you wish to make the binary portable, ensure you include ldflags/extldflags to create a statically linked binary. For hints, see this projects release workflow.
