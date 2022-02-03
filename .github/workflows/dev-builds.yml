@@ -36,7 +36,7 @@ jobs:
           GIT_COMMIT=$(git rev-parse --short HEAD)
           GIT_BRANCH=$(git branch --show-current)
           REPO_PREFIX="github.com/andrewpmartinez/grid"
-          go build -ldflags "-X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
+          go build -ldflags "-s -w -X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
           tar -cvf grid.tar ./grid
 
       - name: List
@@ -81,7 +81,7 @@ jobs:
           $GIT_COMMIT=git rev-parse --short HEAD
           $GIT_BRANCH=git branch --show-current
           $REPO_PREFIX="github.com/andrewpmartinez/grid"
-          go build -ldflags "-X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
+          go build -ldflags "-s -w -H=windowsgui -extldflags=-static -X '$REPO_PREFIX/dump.Commit=$GIT_COMMIT' -X '$REPO_PREFIX/dump.Branch=$GIT_BRANCH' -X '$REPO_PREFIX/dump.Version=$GIT_LAST_VERSION-$GIT-COMMIT' -X '$REPO_PREFIX/dump.BuildDate=$BUILD_DATE'" -o "./" ./...
       - name: List
         run: |
           ls
