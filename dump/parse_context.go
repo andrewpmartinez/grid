@@ -158,7 +158,7 @@ func (c *context) handleLocation(line string) {
 //
 // Function lines are found under a go routine header and precede a location line. Function lines represent one frame
 // in the call stack of a go routine. They are lacking some execution info which is provided in the dump files
-//// next line, which is a location line.
+// // next line, which is a location line.
 func (c *context) handleFunction(line string) {
 	if c.currentFrame != nil {
 		c.logger.Warnf("unexpected function on line [%d] already in a function, expected a location for function from line [%d]", c.lineNumber, c.currentFrame.FileStartLine)
@@ -201,7 +201,9 @@ type RoutineLine struct {
 	DurationUnit string
 }
 
-var RoutineLineMatch = regexp.MustCompile(`^goroutine (\d+) \[([\w ]+)(, (\d+) (\w+))?]:$`)
+// RoutineLineMatch is a regex that matches a goroutine line.
+// Check the `waitReasonStrings` variable in `src/runtime/runtime2.go` for the possible wait reasons.
+var RoutineLineMatch = regexp.MustCompile(`^goroutine (\d+) \[([\w \.\(\)]+)(, (\d+) (\w+))?]:$`)
 
 var (
 	RoutineLineMatchId           = 1
