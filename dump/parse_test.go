@@ -3,11 +3,25 @@ package dump
 import (
 	"bufio"
 	"bytes"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-var routine1 = `intentional garbage
+var routine2_go_1_25_4 = `intentional garbage
+
+goroutine 11 [syscall, 7 minutes, locked to thread]:
+syscall.SyscallN(0xc00037dbf0?, {0xc0000879c0?, 0x7ff6841a4059?, 0x7ff687114ee0?})
+	C:/Program Files/Go/src/runtime/syscall_windows.go:500 +0x1e
+golang.org/x/sys/windows.GetQueuedCompletionStatus(0x26c, 0xc000087aa4, 0xc000087ac8, 0xc000087b88, 0xffffffff)
+	C:/Users/andre/go/pkg/mod/golang.org/x/sys@v0.37.0/windows/zsyscall_windows.go:2580 +0x137
+github.com/fsnotify/fsnotify.(*readDirChangesW).readEvents(0xc000ec02c0)
+	C:/Users/andre/go/pkg/mod/github.com/fsnotify/fsnotify@v1.9.0/backend_windows.go:491 +0x7d
+created by github.com/fsnotify/fsnotify.newBackend in goroutine 1
+	C:/Users/andre/go/pkg/mod/github.com/fsnotify/fsnotify@v1.9.0/backend_windows.go:53 +0x30c
+`
+
+var routine1_go1_16 = `intentional garbage
 intentional garbage
 goroutine 733794 [semacquire, 792 minutes]:
 sync.runtime_SemacquireMutex(0xc00034b3ec, 0xc00380ac00, 0x1)
@@ -59,8 +73,25 @@ github.com/openziti/ziti/ziti-controller/subcmd.Execute()
 main.main()
 	/home/runner/work/ziti/ziti/ziti-controller/main.go:49 +0x25`
 
-func Test_ParseEntireGoRoutine(t *testing.T) {
-	stringBuffer := bytes.NewBufferString(routine1)
+func Test_ParseEntireGoRoutine_1_25_4(t *testing.T) {
+	stringBuffer := bytes.NewBufferString(routine2_go_1_25_4)
+	buffReader := bufio.NewReader(stringBuffer)
+	scanner := bufio.NewScanner(buffReader)
+
+	t.Run("does not return errors on valid go routine", func(t *testing.T) {
+		req := require.New(t)
+		dump, err := ParseScanner(scanner, nil)
+		req.NoError(err)
+
+		t.Run("has one go routines", func(t *testing.T) {
+			req := require.New(t)
+			req.Len(dump.Routines, 1)
+		})
+	})
+}
+
+func Test_ParseEntireGoRoutine_1_16(t *testing.T) {
+	stringBuffer := bytes.NewBufferString(routine1_go1_16)
 	buffReader := bufio.NewReader(stringBuffer)
 	scanner := bufio.NewScanner(buffReader)
 

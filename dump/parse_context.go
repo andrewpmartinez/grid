@@ -199,18 +199,20 @@ type RoutineLine struct {
 	Type         string
 	Duration     string
 	DurationUnit string
+	SubType      string
 }
 
 // RoutineLineMatch is a regex that matches a goroutine line.
 // Check the `waitReasonStrings` variable in `src/runtime/runtime2.go` for the possible wait reasons.
-var RoutineLineMatch = regexp.MustCompile(`^goroutine (\d+) \[([\w \.\(\)]+)(, (\d+) (\w+))?]:$`)
+var RoutineLineMatch = regexp.MustCompile(`^goroutine (\d+) \[(.+)\]:$`)
+
+//goroutine 11 [syscall, 7 minutes, locked to thread]:
+//goroutine 1 [select]:
 
 var (
-	RoutineLineMatchId           = 1
-	RoutineLineMatchType         = 2
-	RoutineLineMatchDuration     = 4
-	RoutineLineMatchDurationUnit = 5
-	RoutineLineMatchLength       = 6
+	RoutineLineMatchId         = 1
+	RoutineLineCharacteristics = 2
+	RoutineLineMatchLength     = 3
 )
 
 func ParseRoutineLine(line string) (*RoutineLine, error) {
@@ -222,11 +224,32 @@ func ParseRoutineLine(line string) (*RoutineLine, error) {
 
 	id, _ := strconv.ParseInt(matches[RoutineLineMatchId], 10, 32)
 
+	characteristics := strings.Split(matches[RoutineLineCharacteristics], ", ")
+
+	routineType := ""
+	if len(characteristics) > 0 {
+		routineType = characteristics[0]
+	}
+
+	durationTime := ""
+	durationUnit := ""
+	if len(characteristics) > 1 {
+		duration := strings.Split(characteristics[1], " ")
+		durationTime = duration[0]
+		durationUnit = duration[1]
+	}
+
+	subType := ""
+	if len(characteristics) > 2 {
+		subType = characteristics[2]
+	}
+
 	return &RoutineLine{
 		Id:           int(id),
-		Type:         matches[RoutineLineMatchType],
-		Duration:     matches[RoutineLineMatchDuration],
-		DurationUnit: matches[RoutineLineMatchDurationUnit],
+		Type:         routineType,
+		Duration:     durationTime,
+		DurationUnit: durationUnit,
+		SubType:      subType,
 	}, nil
 }
 

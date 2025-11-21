@@ -2,14 +2,15 @@ package gui
 
 import (
 	"fmt"
-	g "github.com/AllenDang/giu"
-	"github.com/andrewpmartinez/grid/dump"
-	"github.com/sirupsen/logrus"
 	"math"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	g "github.com/AllenDang/giu"
+	"github.com/andrewpmartinez/grid/dump"
+	"github.com/sirupsen/logrus"
 )
 
 type DumpWindow struct {
@@ -19,19 +20,12 @@ type DumpWindow struct {
 	buildFunctionRowsOnce sync.Once
 	functionRows          []*g.TableRowWidget
 	path                  string
-	editor                *g.CodeEditorWidget
 	routineText           string
 }
 
 func NewDumpWindow() *DumpWindow {
-	editor := g.CodeEditor().
-		ShowWhitespaces(false).
-		TabSize(2).
-		Border(true)
-
 	return &DumpWindow{
 		buildFunctionRowsOnce: sync.Once{},
-		editor:                editor,
 	}
 }
 
@@ -143,27 +137,27 @@ func (dumpWindow *DumpWindow) OpenFunctionDetail(funcName string) {
 	builder := strings.Builder{}
 	start := time.Now()
 	for signature, routines := range routineStats.RoutinesBySignature {
-		builder.Write([]byte(fmt.Sprintf("Signature: %s\nOccurences: %d \n\n", signature, len(routines))))
+		builder.WriteString(fmt.Sprintf("Signature: %s\nOccurences: %d \n\n", signature, len(routines)))
 
-		builder.Write([]byte(routines[0].Raw()))
-		builder.Write([]byte("\n"))
-		builder.Write([]byte("go routine ids: "))
+		builder.WriteString(routines[0].Raw())
+		builder.WriteString("\n")
+		builder.WriteString("go routine ids: ")
 		isFirst := true
 		idsPerLineCount := 0
 		for _, routine := range routines {
 			if !isFirst {
-				builder.Write([]byte(","))
+				builder.WriteString(",")
 				if idsPerLineCount > 50 {
 					idsPerLineCount = 0
-					builder.Write([]byte("\n"))
+					builder.WriteString("\n")
 				}
 			} else {
 				isFirst = false
 			}
-			builder.Write([]byte(strconv.Itoa(routine.Id)))
+			builder.WriteString(strconv.Itoa(routine.Id))
 			idsPerLineCount++
 		}
-		builder.Write([]byte("\n\n--------------------------------------------------------------------------------------------------------------------\n\n"))
+		builder.WriteString("\n\n--------------------------------------------------------------------------------------------------------------------\n\n")
 
 	}
 
